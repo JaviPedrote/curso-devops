@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var azureConnectionString = builder.Configuration["AzureMonitor:ConnectionString"] 
     ?? Environment.GetEnvironmentVariable("AZURE_MONITOR_CONNECTION_STRING");
-// prueba
+
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metricsBuilder =>
     {
@@ -75,6 +75,7 @@ app.MapGet("/obtenercontactos", () =>
 })
 .WithName("ObtenerContactos")
 .WithOpenApi();
+
 
 app.Run();
 
