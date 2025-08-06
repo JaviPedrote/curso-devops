@@ -5,39 +5,30 @@ using Azure.Monitor.OpenTelemetry.Exporter;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var azureConnectionString = builder.Configuration["AzureMonitor:ConnectionString"] 
-    ?? Environment.GetEnvironmentVariable("AZURE_MONITOR_CONNECTION_STRING");
-// prueba
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metricsBuilder =>
     {
         metricsBuilder
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("ApiContactos"))
             .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation();
-            
-        if (!string.IsNullOrEmpty(azureConnectionString))
-        {
-            metricsBuilder.AddAzureMonitorMetricExporter(o =>
+            .AddHttpClientInstrumentation()
+            .AddAzureMonitorMetricExporter(o =>
             {
-                o.ConnectionString = azureConnectionString;
+                o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"] 
+                     ?? Environment.GetEnvironmentVariable("AZURE_MONITOR_CONNECTION_STRING");
             });
-        }
     })
     .WithTracing(tracingBuilder =>
     {
         tracingBuilder
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("ApiContactos"))
             .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation();
-            
-        if (!string.IsNullOrEmpty(azureConnectionString))
-        {
-            tracingBuilder.AddAzureMonitorTraceExporter(o =>
+            .AddHttpClientInstrumentation()
+            .AddAzureMonitorTraceExporter(o =>
             {
-                o.ConnectionString = azureConnectionString;
+                o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"] 
+                     ?? Environment.GetEnvironmentVariable("AZURE_MONITOR_CONNECTION_STRING");
             });
-        }
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -75,6 +66,7 @@ app.MapGet("/obtenercontactos", () =>
 })
 .WithName("ObtenerContactos")
 .WithOpenApi();
+
 
 app.Run();
 
