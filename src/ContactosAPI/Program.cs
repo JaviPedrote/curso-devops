@@ -5,30 +5,39 @@ using Azure.Monitor.OpenTelemetry.Exporter;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var azureConnectionString = builder.Configuration["AzureMonitor:ConnectionString"] 
+    ?? Environment.GetEnvironmentVariable("AZURE_MONITOR_CONNECTION_STRING");
+
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metricsBuilder =>
     {
         metricsBuilder
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("ApiContactos"))
             .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddAzureMonitorMetricExporter(o =>
+            .AddHttpClientInstrumentation();
+            
+        if (!string.IsNullOrEmpty(azureConnectionString))
+        {
+            metricsBuilder.AddAzureMonitorMetricExporter(o =>
             {
-                o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"] 
-                     ?? Environment.GetEnvironmentVariable("AZURE_MONITOR_CONNECTION_STRING");
+                o.ConnectionString = azureConnectionString;
             });
+        }
     })
     .WithTracing(tracingBuilder =>
     {
         tracingBuilder
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("ApiContactos"))
             .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddAzureMonitorTraceExporter(o =>
+            .AddHttpClientInstrumentation();
+            
+        if (!string.IsNullOrEmpty(azureConnectionString))
+        {
+            tracingBuilder.AddAzureMonitorTraceExporter(o =>
             {
-                o.ConnectionString = builder.Configuration["AzureMonitor:ConnectionString"] 
-                     ?? Environment.GetEnvironmentVariable("AZURE_MONITOR_CONNECTION_STRING");
+                o.ConnectionString = azureConnectionString;
             });
+        }
     });
 
 builder.Services.AddEndpointsApiExplorer();
